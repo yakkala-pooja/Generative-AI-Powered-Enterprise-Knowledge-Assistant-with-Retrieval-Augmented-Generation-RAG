@@ -114,6 +114,10 @@ def run_component(component: str):
         print("🚀 Starting all services...")
         subprocess.run([sys.executable, "enterprise_assistant_demo.py", "--mode", "all"])
     
+    elif component == "lightweight":
+        print("🪶 Starting lightweight demo (reduced memory usage)...")
+        subprocess.run([sys.executable, "lightweight_config.py"])
+    
     else:
         print(f"❌ Unknown component: {component}")
         print_help()
@@ -156,7 +160,7 @@ def main():
     parser.add_argument(
         'component',
         nargs='?',
-        choices=['demo', 'streamlit', 'api', 'interactive', 'all'],
+        choices=['demo', 'streamlit', 'api', 'interactive', 'all', 'lightweight'],
         help='Component to run'
     )
     

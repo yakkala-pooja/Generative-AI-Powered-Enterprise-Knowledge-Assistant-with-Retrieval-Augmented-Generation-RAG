@@ -247,12 +247,18 @@ class EnterpriseSQLAgent:
     
     def _setup_sql_agent(self):
         """Setup LangChain SQL agent"""
-        if not self.llm or not self.db_connection:
-            print("Cannot setup SQL agent: Missing LLM or database connection")
+        if not self.db_connection:
+            print("Cannot setup SQL agent: Missing database connection")
+            return
+        
+        if not self.llm:
+            print("SQL agent initialized with limited functionality (no LLM available)")
+            print("Available features: KPI queries, custom SQL execution, schema inspection")
+            self.sql_agent = None  # No LangChain agent, but basic functionality works
             return
         
         try:
-            print("Setting up SQL agent...")
+            print("Setting up SQL agent with full LLM functionality...")
             
             # Create SQL toolkit
             toolkit = SQLDatabaseToolkit(
@@ -269,10 +275,11 @@ class EnterpriseSQLAgent:
                 handle_parsing_errors=True
             )
             
-            print("SQL agent setup complete")
+            print("SQL agent setup complete with full functionality")
             
         except Exception as e:
             print(f"Error setting up SQL agent: {e}")
+            print("Falling back to basic SQL functionality")
             self.sql_agent = None
     
     def _define_kpis(self) -> Dict[str, Dict[str, str]]:
@@ -609,10 +616,25 @@ class EnterpriseSQLAgent:
         Returns:
             System status information
         """
+        # Determine functionality level
+        if self.engine and self.llm and self.sql_agent:
+            functionality = "full"
+        elif self.engine:
+            functionality = "basic"
+        else:
+            functionality = "none"
+        
         return {
             "database_connected": self.engine is not None,
             "sql_agent_available": self.sql_agent is not None,
             "llm_available": self.llm is not None,
+            "functionality_level": functionality,
+            "available_features": {
+                "kpi_queries": self.engine is not None,
+                "custom_sql": self.engine is not None,
+                "natural_language_queries": self.sql_agent is not None,
+                "schema_inspection": self.engine is not None
+            },
             "database_url": self.database_url if self.use_sqlite else "External DB",
             "llm_model": self.llm_model if self.llm else "None",
             "available_kpis": len(self.kpi_definitions),
