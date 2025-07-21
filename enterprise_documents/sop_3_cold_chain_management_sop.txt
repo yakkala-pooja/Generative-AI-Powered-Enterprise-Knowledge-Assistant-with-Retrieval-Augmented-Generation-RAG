@@ -1,0 +1,41 @@
+
+STANDARD OPERATING PROCEDURE
+Document ID: SOP-CC-003
+Version: 3.0
+Effective Date: 2025-02-05
+
+PURPOSE:
+To maintain product integrity during cold chain transportation and storage operations.
+
+SCOPE:
+Applies to all temperature-sensitive products requiring controlled storage and transportation.
+
+CRITICAL CONTROL POINTS:
+1. Receiving temperature verification
+2. Storage temperature monitoring
+3. Transportation temperature control
+4. Delivery temperature confirmation
+
+TEMPERATURE REQUIREMENTS:
+- Frozen products: -18°C to -15°C
+- Chilled products: 2°C to 8°C
+- Ambient sensitive: 15°C to 25°C
+
+MONITORING PROCEDURES:
+1. Continuous temperature logging every 15 minutes
+2. Immediate alerts for temperature deviations
+3. Manual temperature checks every 4 hours
+4. Calibration of monitoring equipment monthly
+
+DEVIATION RESPONSE:
+1. Immediate investigation of root cause
+2. Product quality assessment
+3. Customer notification if required
+4. Corrective action implementation
+5. Documentation of all actions taken
+
+TRAINING REQUIREMENTS:
+All personnel handling temperature-sensitive products must complete annual cold chain training.
+
+DOCUMENTATION:
+Temperature logs must be maintained for minimum 2 years and available for customer/regulatory audits.

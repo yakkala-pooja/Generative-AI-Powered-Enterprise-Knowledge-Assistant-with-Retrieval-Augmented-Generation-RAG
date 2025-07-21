@@ -1,0 +1,53 @@
+
+STANDARD OPERATING PROCEDURE
+Document ID: SOP-WH-001
+Version: 2.1
+Effective Date: 2025-06-12
+
+PURPOSE:
+This procedure outlines the standard process for managing warehouse inventory to ensure accurate stock levels, minimize waste, and maintain optimal storage conditions.
+
+SCOPE:
+This SOP applies to all warehouse personnel responsible for inventory management, including receiving, storage, picking, and shipping operations.
+
+RESPONSIBILITIES:
+- Warehouse Manager: Overall responsibility for inventory accuracy
+- Inventory Clerks: Daily cycle counts and stock movements
+- Receiving Team: Incoming shipment verification
+- Shipping Team: Outbound order fulfillment
+
+PROCEDURE:
+1. DAILY INVENTORY CHECKS
+   1.1 Perform cycle counts on assigned SKUs
+   1.2 Update inventory management system
+   1.3 Report discrepancies to supervisor
+   1.4 Document all adjustments with proper authorization
+
+2. RECEIVING PROCESS
+   2.1 Verify shipment against purchase order
+   2.2 Inspect goods for quality and damage
+   2.3 Update system with received quantities
+   2.4 Place items in designated storage locations
+
+3. STORAGE GUIDELINES
+   3.1 Follow FIFO (First In, First Out) methodology
+   3.2 Maintain proper temperature and humidity conditions
+   3.3 Ensure adequate spacing for safety and accessibility
+   3.4 Label all storage locations clearly
+
+4. ORDER FULFILLMENT
+   4.1 Pick items based on shipping priority
+   4.2 Verify picked quantities against order
+   4.3 Package according to shipping requirements
+   4.4 Update system with shipped quantities
+
+QUALITY CONTROL:
+- Weekly inventory accuracy audits
+- Monthly storage condition reviews
+- Quarterly process optimization reviews
+
+DOCUMENTATION:
+All inventory movements must be recorded in the WMS system within 2 hours of completion.
+
+TRAINING:
+New employees must complete inventory management training within 30 days of hire.

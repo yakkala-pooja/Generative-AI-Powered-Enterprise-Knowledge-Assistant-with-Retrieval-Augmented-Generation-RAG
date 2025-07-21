@@ -1,0 +1,50 @@
+
+STANDARD OPERATING PROCEDURE
+Document ID: SOP-SC-002
+Version: 1.8
+Effective Date: 2025-01-19
+
+PURPOSE:
+To establish a standardized process for evaluating and qualifying new suppliers to ensure they meet quality, delivery, and compliance requirements.
+
+SCOPE:
+This procedure applies to all procurement activities involving new supplier selection and qualification.
+
+PROCEDURE:
+1. INITIAL SUPPLIER ASSESSMENT
+   1.1 Review supplier capabilities and certifications
+   1.2 Evaluate financial stability
+   1.3 Assess quality management systems
+   1.4 Review references from existing customers
+
+2. QUALIFICATION CRITERIA
+   2.1 Quality certifications (ISO 9001, etc.)
+   2.2 On-time delivery performance (>95% target)
+   2.3 Financial stability (minimum credit rating)
+   2.4 Compliance with regulatory requirements
+
+3. SITE AUDIT PROCESS
+   3.1 Schedule on-site audit within 30 days
+   3.2 Evaluate manufacturing processes
+   3.3 Review quality control procedures
+   3.4 Assess environmental and safety practices
+
+4. APPROVAL PROCESS
+   4.1 Compile audit results and recommendations
+   4.2 Present to supplier qualification committee
+   4.3 Make go/no-go decision
+   4.4 Communicate decision to supplier and internal teams
+
+RISK ASSESSMENT:
+Suppliers are categorized as Low, Medium, or High risk based on:
+- Geographic location
+- Single source dependencies
+- Financial stability
+- Quality history
+
+CONTINUOUS MONITORING:
+Approved suppliers undergo quarterly performance reviews covering:
+- Delivery performance
+- Quality metrics
+- Cost competitiveness
+- Innovation capabilities
