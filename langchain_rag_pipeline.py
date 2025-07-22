@@ -210,14 +210,18 @@ Assistant:"""
             
             # Process source documents
             sources = []
+            seen_files = set()
             for doc in source_documents:
-                sources.append({
-                    "filename": doc.metadata.get("filename", "Unknown"),
-                    "document_type": doc.metadata.get("document_type", "Unknown"),
-                    "chunk_id": doc.metadata.get("chunk_id", -1),
-                    "content_preview": doc.page_content[:200] + "...",
-                    "relevance": "High"  # Could implement scoring
-                })
+                filename = doc.metadata.get("filename", "Unknown")
+                if filename not in seen_files:  # Avoid duplicates
+                    seen_files.add(filename)
+                    sources.append({
+                        "filename": filename,
+                        "document_type": doc.metadata.get("document_type", "Unknown"),
+                        "chunk_id": doc.metadata.get("chunk_id", -1),
+                        "content_preview": doc.page_content[:200] + "...",
+                        "relevance": "High"  # Could implement scoring
+                    })
             
             return {
                 "answer": answer,
@@ -254,19 +258,46 @@ Assistant:"""
                 })
                 context_parts.append(doc.page_content)
             
-            # Create a basic answer from retrieved context
-            answer = f"Based on the retrieved documents, here are the most relevant information sources for your query '{question}':\n\n"
-            for i, source in enumerate(sources[:3], 1):
-                answer += f"{i}. From {source['filename']} ({source['document_type']}):\n"
-                answer += f"   {source['content_preview']}\n\n"
+            # Create a better formatted answer from retrieved context
+            answer = f"Based on the retrieved documents, here are the key insights for your question '{question}':\n\n"
+            
+            # Group by document type and create structured response
+            doc_groups = {}
+            seen_files = set()
+            unique_sources = []
+            
+            for source in sources:
+                filename = source['filename']
+                if filename not in seen_files:  # Avoid duplicates
+                    seen_files.add(filename)
+                    unique_sources.append(source)
+                    doc_type = source['document_type']
+                    if doc_type not in doc_groups:
+                        doc_groups[doc_type] = []
+                    doc_groups[doc_type].append(source)
+            
+            for doc_type, docs in doc_groups.items():
+                answer += f"**{doc_type.replace('_', ' ').title()}:**\n"
+                for doc in docs:
+                    # Extract key information from the content
+                    content = doc['content_preview']
+                    # Clean up the content and make it more readable
+                    clean_content = content.replace('\n', ' ').strip()
+                    if len(clean_content) > 300:
+                        clean_content = clean_content[:300] + "..."
+                    answer += f"• {clean_content}\n"
+                answer += "\n"
+            
+            # Add a summary note
+            answer += f"\n*This response is based on {len(seen_files)} relevant documents. For AI-generated summaries, please provide an OpenAI API key.*"
             
             return {
                 "answer": answer,
-                "sources": sources,
+                "sources": unique_sources,  # Use deduplicated sources
                 "query": question,
                 "timestamp": datetime.now().isoformat(),
                 "model_used": "retrieval_only",
-                "source_count": len(sources),
+                "source_count": len(unique_sources),
                 "note": "This response uses document retrieval only. For AI-generated answers, please provide an OpenAI API key."
             }
             

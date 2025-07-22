@@ -245,15 +245,18 @@ class StreamlitDashboard:
         st.markdown('<div class="section-header">Document Q&A (RAG)</div>', unsafe_allow_html=True)
         
         # Question input
-        default_value = st.session_state.selected_example_question
+        # Check if we have a selected example question
+        if 'selected_example_question' in st.session_state and st.session_state.selected_example_question:
+            # Set the rag_question to the selected example
+            st.session_state.rag_question = st.session_state.selected_example_question
+            # Clear the selected example
+            st.session_state.selected_example_question = ""
+        
         user_question = st.text_input(
             "Ask a question about enterprise documents:",
-            value=default_value,
             placeholder="e.g., What are the warehouse inventory management procedures?",
             key="rag_question"
         )
-        if st.session_state.selected_example_question:
-            st.session_state.selected_example_question = ""
         
         # Options
         col1, col2 = st.columns(2)
@@ -278,9 +281,16 @@ class StreamlitDashboard:
                     st.session_state.selected_example_question = question
                     st.rerun()
         
-        # Ask question button
-        if user_question and st.button("Ask Question", type="primary", key="ask_rag"):
+        # Ask question button - always show it
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            ask_button = st.button("Ask Question", type="primary", key="ask_rag", use_container_width=True)
+        
+        # Process the question if button is clicked and question exists
+        if ask_button and user_question:
             self._process_rag_query(user_question, use_conversation, show_sources)
+        elif ask_button and not user_question:
+            st.warning("Please enter a question before clicking 'Ask Question'.")
         
         # Display conversation history
         if hasattr(st.session_state, 'chat_history') and st.session_state.chat_history:
@@ -339,15 +349,18 @@ class StreamlitDashboard:
         st.write("Ask questions about your business data in natural language:")
         
         # Question input
-        default_value = st.session_state.selected_sql_question
+        # Check if we have a selected example question
+        if 'selected_sql_question' in st.session_state and st.session_state.selected_sql_question:
+            # Set the nl_sql_question to the selected example
+            st.session_state.nl_sql_question = st.session_state.selected_sql_question
+            # Clear the selected example
+            st.session_state.selected_sql_question = ""
+        
         user_question = st.text_input(
             "Ask a question about your data:",
-            value=default_value,
             placeholder="e.g., What are the total sales by region?",
             key="nl_sql_question"
         )
-        if st.session_state.selected_sql_question:
-            st.session_state.selected_sql_question = ""
         
         # Example questions
         st.write("Example Questions:")
@@ -366,30 +379,42 @@ class StreamlitDashboard:
                     st.rerun()
         
         # Execute button
-        if user_question and st.button("Ask Question", type="primary", key="ask_nl_sql"):
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            ask_button = st.button("Ask Question", type="primary", key="ask_nl_sql", use_container_width=True)
+        
+        # Process the question if button is clicked and question exists
+        if ask_button and user_question:
             self._process_nl_sql_query(user_question)
+        elif ask_button and not user_question:
+            st.warning("Please enter a question before clicking 'Ask Question'.")
     
     def _render_custom_sql(self):
         """Render custom SQL query interface"""
         st.write("Execute custom SQL queries directly:")
         
         # SQL input
-        default_value = st.session_state.selected_custom_sql
+        # Check if we have a selected example query
+        if 'selected_custom_sql' in st.session_state and st.session_state.selected_custom_sql:
+            # Set the custom_sql to the selected example
+            st.session_state.custom_sql = st.session_state.selected_custom_sql
+            # Clear the selected example
+            st.session_state.selected_custom_sql = ""
+        
         sql_query = st.text_area(
             "Enter SQL query:",
-            value=default_value,
             height=100,
             placeholder="SELECT * FROM sales LIMIT 10",
             key="custom_sql"
         )
-        if st.session_state.selected_custom_sql:
-            st.session_state.selected_custom_sql = ""
         
         if st.button("Execute", type="primary", use_container_width=True):
             self._execute_custom_sql(sql_query)
         
-        if st.button("Show Schema", use_container_width=True):
-            self._show_database_schema()
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Show Schema", use_container_width=True):
+                self._show_database_schema()
         
         # Example queries
         st.write("Example Queries:")
@@ -408,15 +433,11 @@ class StreamlitDashboard:
         """Process a RAG query and display results"""
         if not self.rag_pipeline:
             st.error("RAG pipeline not available")
-            st.write("Debug: RAG pipeline is None")
             return
-        
-        st.write(f"Debug: Processing question: {question}")
         
         with st.spinner("Processing your question..."):
             try:
                 result = self.rag_pipeline.query(question, use_conversation=use_conversation)
-                st.write(f"Debug: Got result with answer length: {len(result['answer'])}")
                 
                 # Add to chat history
                 chat_entry = {
@@ -432,13 +453,27 @@ class StreamlitDashboard:
                 # Display result
                 st.markdown('<div class="chat-message">', unsafe_allow_html=True)
                 st.markdown(f"**Question:** {question}")
-                st.markdown(f"**Answer:** {result['answer']}")
+                
+                # Format the answer nicely
+                answer_text = result['answer']
+                # Convert markdown-style formatting to Streamlit markdown
+                answer_text = answer_text.replace('**', '**').replace('*', '*')
+                st.markdown(f"**Answer:**")
+                st.markdown(answer_text)
                 
                 # Display sources
                 if result.get('sources') and show_sources:
                     st.markdown("**Sources:**")
-                    for i, source in enumerate(result['sources'][:3], 1):
-                        st.markdown(f"- {source['filename']} ({source['document_type']})")
+                    # Deduplicate sources by filename
+                    seen_sources = set()
+                    unique_sources = []
+                    for source in result['sources']:
+                        if source['filename'] not in seen_sources:
+                            seen_sources.add(source['filename'])
+                            unique_sources.append(source)
+                    
+                    for source in unique_sources:
+                        st.markdown(f"• {source['filename']} ({source['document_type']})")
                 
                 st.markdown('</div>', unsafe_allow_html=True)
                 
@@ -453,9 +488,6 @@ class StreamlitDashboard:
                 
             except Exception as e:
                 st.error(f"Error processing question: {e}")
-                st.write(f"Debug: Exception details: {str(e)}")
-                import traceback
-                st.write(f"Debug: Traceback: {traceback.format_exc()}")
     
     def _execute_kpi(self, kpi_name: str):
         """Execute a KPI query"""
@@ -672,6 +704,12 @@ class StreamlitDashboard:
     
     def run(self):
         """Run the Streamlit dashboard"""
+        # Initialize session state
+        self._initialize_session_state()
+        
+        # Load system components
+        self._load_system_components()
+        
         # Render header
         self.render_header()
         

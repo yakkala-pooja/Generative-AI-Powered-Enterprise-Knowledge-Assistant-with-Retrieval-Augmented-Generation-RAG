@@ -132,7 +132,7 @@ enterprise-knowledge-assistant/
 
 ### Environment Variables
 
-```bash
+   ```bash
 # Required for full functionality
 OPENAI_API_KEY=your-openai-api-key-here
 
@@ -318,7 +318,7 @@ sql_agent.add_custom_kpis(custom_kpis)
 
 The system automatically tracks usage metrics:
 
-```python
+   ```python
 # Get usage analytics
 analytics = rag_pipeline.get_usage_analytics()
 
