@@ -349,6 +349,23 @@ class EnterpriseAssistantDemo:
         print(f"\n   API Documentation: http://localhost:8000/docs")
         print(f"   ReDoc: http://localhost:8000/redoc")
     
+    def run_comprehensive_demo(self):
+        """Run the comprehensive demonstration"""
+        print("Enterprise Knowledge Assistant - Comprehensive Demo")
+        print("=" * 60)
+        
+        # Initialize components
+        self._initialize_components()
+        
+        # Run all demos
+        self.demo_rag_pipeline()
+        self.demo_sql_agent()
+        self.demo_integration_scenarios()
+        self.demo_api_endpoints()
+        
+        # Generate report
+        self.generate_demo_report()
+    
     def run_interactive_mode(self):
         """Run interactive demo mode"""
         print("\n6. Interactive Mode")

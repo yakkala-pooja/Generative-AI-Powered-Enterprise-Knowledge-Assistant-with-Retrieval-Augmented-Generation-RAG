@@ -136,29 +136,36 @@ class StreamlitDashboard:
     
     def _load_system_components(self):
         """Load RAG pipeline and SQL agent"""
-        with st.spinner("Initializing system components..."):
-            try:
-                # Initialize RAG pipeline
+        try:
+            # Initialize RAG pipeline
+            if not hasattr(self, 'rag_pipeline') or self.rag_pipeline is None:
                 self.rag_pipeline = LangChainRAGPipeline(
                     openai_api_key=st.session_state.openai_api_key,
                     embedding_model="sentence-transformers"
                 )
-                
-                # Initialize SQL agent
+            
+            # Initialize SQL agent
+            if not hasattr(self, 'sql_agent') or self.sql_agent is None:
                 self.sql_agent = EnterpriseSQLAgent(
                     openai_api_key=st.session_state.openai_api_key,
                     use_sqlite=True
                 )
-                
-                # Update system status
-                st.session_state.system_status = {
-                    'rag_status': self.rag_pipeline.get_system_status(),
-                    'sql_status': self.sql_agent.get_system_status(),
-                    'last_updated': datetime.now().isoformat()
-                }
-                
-            except Exception as e:
-                st.error(f"Error initializing system components: {e}")
+            
+            # Update system status
+            st.session_state.system_status = {
+                'rag_status': self.rag_pipeline.get_system_status(),
+                'sql_status': self.sql_agent.get_system_status(),
+                'last_updated': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            st.error(f"Error initializing system components: {e}")
+            # Set default status if initialization fails
+            st.session_state.system_status = {
+                'rag_status': {'vector_store_loaded': False, 'llm_available': False},
+                'sql_status': {'database_connected': False, 'sql_agent_available': False},
+                'last_updated': datetime.now().isoformat()
+            }
     
     def render_header(self):
         """Render the main header"""
@@ -196,7 +203,10 @@ class StreamlitDashboard:
             
             if api_key != st.session_state.get('openai_api_key', ''):
                 st.session_state.openai_api_key = api_key
-                st.rerun()
+                # Reinitialize components with new API key
+                self.rag_pipeline = None
+                self.sql_agent = None
+                self._load_system_components()
             
             # System status
             st.subheader("System Status")
@@ -398,11 +408,15 @@ class StreamlitDashboard:
         """Process a RAG query and display results"""
         if not self.rag_pipeline:
             st.error("RAG pipeline not available")
+            st.write("Debug: RAG pipeline is None")
             return
+        
+        st.write(f"Debug: Processing question: {question}")
         
         with st.spinner("Processing your question..."):
             try:
                 result = self.rag_pipeline.query(question, use_conversation=use_conversation)
+                st.write(f"Debug: Got result with answer length: {len(result['answer'])}")
                 
                 # Add to chat history
                 chat_entry = {
@@ -439,6 +453,9 @@ class StreamlitDashboard:
                 
             except Exception as e:
                 st.error(f"Error processing question: {e}")
+                st.write(f"Debug: Exception details: {str(e)}")
+                import traceback
+                st.write(f"Debug: Traceback: {traceback.format_exc()}")
     
     def _execute_kpi(self, kpi_name: str):
         """Execute a KPI query"""
