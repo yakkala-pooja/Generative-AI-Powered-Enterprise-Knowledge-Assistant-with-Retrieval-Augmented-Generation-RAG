@@ -52,7 +52,7 @@ class EnterpriseAssistantDemo:
         self.sql_agent = None
         self.demo_results = {}
         
-        print("🏢 Enterprise Knowledge Assistant - Comprehensive Demo")
+        print("Enterprise Knowledge Assistant - Comprehensive Demo")
         print("=" * 60)
         
         # Initialize components
@@ -64,7 +64,7 @@ class EnterpriseAssistantDemo:
         
         try:
             # Initialize RAG pipeline
-            print("   📚 Initializing RAG pipeline...")
+            print("   Initializing RAG pipeline...")
             self.rag_pipeline = LangChainRAGPipeline(
                 openai_api_key=self.openai_api_key,
                 embedding_model="sentence-transformers",
@@ -72,7 +72,7 @@ class EnterpriseAssistantDemo:
             )
             
             # Initialize SQL agent
-            print("   📊 Initializing SQL agent...")
+            print("   Initializing SQL agent...")
             self.sql_agent = EnterpriseSQLAgent(
                 openai_api_key=self.openai_api_key,
                 use_sqlite=True
@@ -82,9 +82,9 @@ class EnterpriseAssistantDemo:
             rag_status = self.rag_pipeline.get_system_status()
             sql_status = self.sql_agent.get_system_status()
             
-            print(f"   ✅ RAG Pipeline: {'Ready' if rag_status['vector_store_loaded'] else 'Limited'}")
-            print(f"   ✅ SQL Agent: {'Ready' if sql_status['database_connected'] else 'Limited'}")
-            print(f"   ✅ LLM: {'Available' if rag_status['llm_available'] else 'Not Available'}")
+            print(f"   RAG Pipeline: {'Ready' if rag_status['vector_store_loaded'] else 'Limited'}")
+            print(f"   SQL Agent: {'Ready' if sql_status['database_connected'] else 'Limited'}")
+            print(f"   LLM: {'Available' if rag_status['llm_available'] else 'Not Available'}")
             
             self.demo_results['initialization'] = {
                 'rag_status': rag_status,
@@ -93,7 +93,7 @@ class EnterpriseAssistantDemo:
             }
             
         except Exception as e:
-            print(f"   ❌ Error initializing components: {e}")
+            print(f"   Error initializing components: {e}")
             print("   Note: Some features may be limited without proper API keys")
     
     def demo_rag_pipeline(self):
@@ -102,7 +102,7 @@ class EnterpriseAssistantDemo:
         print("-" * 40)
         
         if not self.rag_pipeline:
-            print("   ❌ RAG pipeline not available")
+            print("   RAG pipeline not available")
             return
         
         # Demo queries
@@ -137,9 +137,9 @@ class EnterpriseAssistantDemo:
                     use_conversation=False
                 )
                 
-                print(f"   ✅ Answer: {result['answer'][:150]}...")
-                print(f"   📄 Sources: {result['source_count']} documents")
-                print(f"   🤖 Model: {result['model_used']}")
+                print(f"   Answer: {result['answer'][:150]}...")
+                print(f"   Sources: {result['source_count']} documents")
+                print(f"   Model: {result['model_used']}")
                 
                 rag_results.append({
                     'query': query_info,
@@ -148,7 +148,7 @@ class EnterpriseAssistantDemo:
                 })
                 
             except Exception as e:
-                print(f"   ❌ Error: {e}")
+                print(f"   Error: {e}")
                 rag_results.append({
                     'query': query_info,
                     'error': str(e),
@@ -176,10 +176,10 @@ class EnterpriseAssistantDemo:
             print(f"   Q2: What about inventory accuracy requirements?")
             print(f"   A2: {result2['answer'][:100]}...")
             
-            print(f"   ✅ Conversational memory working")
+            print(f"   Conversational memory working")
             
         except Exception as e:
-            print(f"   ❌ Conversational error: {e}")
+            print(f"   Conversational error: {e}")
     
     def demo_sql_agent(self):
         """Demonstrate SQL agent capabilities"""
@@ -187,18 +187,18 @@ class EnterpriseAssistantDemo:
         print("-" * 40)
         
         if not self.sql_agent:
-            print("   ❌ SQL agent not available")
+            print("   SQL agent not available")
             return
         
         # Show available KPIs
-        print("   📊 Available KPIs:")
+        print("   Available KPIs:")
         try:
             kpis = self.sql_agent.get_available_kpis()
             for name, description in list(kpis.items())[:3]:  # Show first 3
                 print(f"     - {name}: {description}")
             print(f"     ... and {len(kpis) - 3} more")
         except Exception as e:
-            print(f"   ❌ Error getting KPIs: {e}")
+            print(f"   Error getting KPIs: {e}")
             return
         
         # Execute sample KPIs
@@ -211,22 +211,22 @@ class EnterpriseAssistantDemo:
                 result = self.sql_agent.execute_kpi_query(kpi_name)
                 
                 if "error" in result:
-                    print(f"   ❌ Error: {result['error']}")
+                    print(f"   Error: {result['error']}")
                     kpi_results.append({'kpi': kpi_name, 'success': False, 'error': result['error']})
                 else:
-                    print(f"   ✅ Success: {result['row_count']} rows returned")
-                    print(f"   📋 Columns: {', '.join(result['columns'][:3])}{'...' if len(result['columns']) > 3 else ''}")
+                    print(f"   Success: {result['row_count']} rows returned")
+                    print(f"   Columns: {', '.join(result['columns'][:3])}{'...' if len(result['columns']) > 3 else ''}")
                     
                     # Show sample data
                     if result['data']:
                         sample_row = result['data'][0]
                         sample_str = ", ".join([f"{k}: {v}" for k, v in list(sample_row.items())[:2]])
-                        print(f"   📄 Sample: {sample_str}...")
+                        print(f"   Sample: {sample_str}...")
                     
                     kpi_results.append({'kpi': kpi_name, 'success': True, 'result': result})
                     
             except Exception as e:
-                print(f"   ❌ Error executing {kpi_name}: {e}")
+                print(f"   Error executing {kpi_name}: {e}")
                 kpi_results.append({'kpi': kpi_name, 'success': False, 'error': str(e)})
         
         # Test natural language queries
@@ -239,15 +239,15 @@ class EnterpriseAssistantDemo:
         
         nl_results = []
         for query in nl_queries:
-            print(f"   🗣️  Query: {query}")
+            print(f"   Query: {query}")
             try:
                 result = self.sql_agent.query_with_agent(query)
-                print(f"   🤖 Answer: {result['answer'][:100]}...")
-                print(f"   🔧 Agent Used: {'Yes' if result['agent_used'] else 'No'}")
+                print(f"   Answer: {result['answer'][:100]}...")
+                print(f"   Agent Used: {'Yes' if result['agent_used'] else 'No'}")
                 nl_results.append({'query': query, 'success': True, 'result': result})
                 
             except Exception as e:
-                print(f"   ❌ Error: {e}")
+                print(f"   Error: {e}")
                 nl_results.append({'query': query, 'success': False, 'error': str(e)})
         
         self.demo_results['sql_demo'] = {
@@ -281,7 +281,7 @@ class EnterpriseAssistantDemo:
         integration_results = []
         
         for scenario in scenarios:
-            print(f"\n   📋 Scenario: {scenario['name']}")
+            print(f"\n   Scenario: {scenario['name']}")
             
             scenario_result = {'name': scenario['name']}
             
@@ -289,11 +289,11 @@ class EnterpriseAssistantDemo:
             if self.rag_pipeline:
                 try:
                     rag_result = self.rag_pipeline.query(scenario['rag_query'])
-                    print(f"   📚 Document insight: {rag_result['answer'][:80]}...")
+                    print(f"   Document insight: {rag_result['answer'][:80]}...")
                     scenario_result['rag_success'] = True
                     scenario_result['rag_sources'] = rag_result['source_count']
                 except Exception as e:
-                    print(f"   ❌ RAG error: {e}")
+                    print(f"   RAG error: {e}")
                     scenario_result['rag_success'] = False
             
             # SQL component
@@ -301,14 +301,14 @@ class EnterpriseAssistantDemo:
                 try:
                     sql_result = self.sql_agent.execute_kpi_query(scenario['sql_query'])
                     if "error" not in sql_result:
-                        print(f"   📊 Data insight: {sql_result['row_count']} records analyzed")
+                        print(f"   Data insight: {sql_result['row_count']} records analyzed")
                         scenario_result['sql_success'] = True
                         scenario_result['sql_rows'] = sql_result['row_count']
                     else:
-                        print(f"   ❌ SQL error: {sql_result['error']}")
+                        print(f"   SQL error: {sql_result['error']}")
                         scenario_result['sql_success'] = False
                 except Exception as e:
-                    print(f"   ❌ SQL error: {e}")
+                    print(f"   SQL error: {e}")
                     scenario_result['sql_success'] = False
             
             integration_results.append(scenario_result)
@@ -342,12 +342,12 @@ class EnterpriseAssistantDemo:
         }
         
         for category, endpoints in api_endpoints.items():
-            print(f"\n   📡 {category}:")
+            print(f"\n   {category}:")
             for endpoint in endpoints:
                 print(f"     - {endpoint}")
         
-        print(f"\n   🌐 API Documentation: http://localhost:8000/docs")
-        print(f"   📖 ReDoc: http://localhost:8000/redoc")
+        print(f"\n   API Documentation: http://localhost:8000/docs")
+        print(f"   ReDoc: http://localhost:8000/redoc")
     
     def run_interactive_mode(self):
         """Run interactive demo mode"""
@@ -397,11 +397,11 @@ class EnterpriseAssistantDemo:
         
         try:
             result = self.rag_pipeline.query(question)
-            print(f"\n📚 Answer: {result['answer']}")
-            print(f"📄 Sources: {result['source_count']} documents")
+            print(f"\nAnswer: {result['answer']}")
+            print(f"Sources: {result['source_count']} documents")
             
             if result.get('sources'):
-                print(f"\n📋 Source Documents:")
+                print(f"\nSource Documents:")
                 for i, source in enumerate(result['sources'][:2], 1):
                     print(f"  {i}. {source['filename']} ({source['document_type']})")
                     
@@ -433,12 +433,12 @@ class EnterpriseAssistantDemo:
                     if "error" in result:
                         print(f"Error: {result['error']}")
                     else:
-                        print(f"\n📊 KPI: {result['kpi_name']}")
-                        print(f"📋 Description: {result['description']}")
-                        print(f"📄 Rows: {result['row_count']}")
+                        print(f"\nKPI: {result['kpi_name']}")
+                        print(f"Description: {result['description']}")
+                        print(f"Rows: {result['row_count']}")
                         
                         if result['data']:
-                            print(f"\n📈 Sample Data:")
+                            print(f"\nSample Data:")
                             for i, row in enumerate(result['data'][:3], 1):
                                 row_str = ", ".join([f"{k}: {v}" for k, v in list(row.items())[:3]])
                                 print(f"  {i}. {row_str}...")
@@ -462,21 +462,21 @@ class EnterpriseAssistantDemo:
         
         try:
             result = self.sql_agent.query_with_agent(question)
-            print(f"\n📊 Answer: {result['answer']}")
-            print(f"🤖 Agent Used: {'Yes' if result['agent_used'] else 'No'}")
+            print(f"\nAnswer: {result['answer']}")
+            print(f"Agent Used: {'Yes' if result['agent_used'] else 'No'}")
             
         except Exception as e:
             print(f"Error: {e}")
     
     def _show_system_status(self):
         """Show current system status"""
-        print(f"\n📊 System Status:")
+        print(f"\nSystem Status:")
         
         if self.rag_pipeline:
             rag_status = self.rag_pipeline.get_system_status()
-            print(f"📚 RAG Pipeline:")
-            print(f"  - Vector Store: {'✅' if rag_status['vector_store_loaded'] else '❌'}")
-            print(f"  - LLM: {'✅' if rag_status['llm_available'] else '❌'}")
+            print(f"RAG Pipeline:")
+            print(f"  - Vector Store: {'Ready' if rag_status['vector_store_loaded'] else 'Limited'}")
+            print(f"  - LLM: {'Available' if rag_status['llm_available'] else 'Not Available'}")
             print(f"  - Model: {rag_status['llm_model']}")
             
             if rag_status.get('vector_store_stats'):
@@ -485,9 +485,9 @@ class EnterpriseAssistantDemo:
         
         if self.sql_agent:
             sql_status = self.sql_agent.get_system_status()
-            print(f"📊 SQL Agent:")
-            print(f"  - Database: {'✅' if sql_status['database_connected'] else '❌'}")
-            print(f"  - Agent: {'✅' if sql_status['sql_agent_available'] else '❌'}")
+            print(f"SQL Agent:")
+            print(f"  - Database: {'Connected' if sql_status['database_connected'] else 'Not Connected'}")
+            print(f"  - Agent: {'Available' if sql_status['sql_agent_available'] else 'Not Available'}")
             print(f"  - KPIs: {sql_status['available_kpis']}")
     
     def generate_demo_report(self):
@@ -524,108 +524,112 @@ class EnterpriseAssistantDemo:
         with open(report_file, 'w') as f:
             json.dump(report, f, indent=2)
         
-        print(f"   📄 Demo report saved to: {report_file}")
+        print(f"\n7. Demo Report Generation")
+        print("-" * 40)
+        print(f"   Demo report saved to: {report_file}")
         
-        # Print summary
-        summary = report["demo_summary"]
-        print(f"   📊 Total Queries: {summary['total_queries']}")
-        print(f"   ✅ Successful: {summary['successful_queries']}")
-        print(f"   📈 Success Rate: {(summary['successful_queries']/summary['total_queries']*100):.1f}%" 
-              if summary['total_queries'] > 0 else "   📈 Success Rate: N/A")
+        # Generate summary
+        total_queries = 0
+        successful_queries = 0
+        
+        if 'rag_demo' in self.demo_results:
+            total_queries += len(self.demo_results['rag_demo'])
+            successful_queries += sum(1 for r in self.demo_results['rag_demo'] if r.get('success', False))
+        
+        if 'sql_demo' in self.demo_results:
+            sql_demo = self.demo_results['sql_demo']
+            if 'kpi_results' in sql_demo:
+                total_queries += len(sql_demo['kpi_results'])
+                successful_queries += sum(1 for r in sql_demo['kpi_results'] if r.get('success', False))
+            if 'nl_results' in sql_demo:
+                total_queries += len(sql_demo['nl_results'])
+                successful_queries += sum(1 for r in sql_demo['nl_results'] if r.get('success', False))
+        
+        summary = {
+            'total_queries': total_queries,
+            'successful_queries': successful_queries,
+            'success_rate': (successful_queries / total_queries * 100) if total_queries > 0 else 0
+        }
+        
+        print(f"   Total Queries: {summary['total_queries']}")
+        print(f"   Successful: {summary['successful_queries']}")
+        print(f"   Success Rate: {(summary['successful_queries']/summary['total_queries']*100):.1f}%" if summary['total_queries'] > 0 else "   Success Rate: N/A")
+        
+        print(f"\nDemo Complete!")
+        print("Next steps:")
+        print("  - Run 'python enterprise_assistant_demo.py --mode interactive' for hands-on testing")
+        print("  - Run 'python enterprise_assistant_demo.py --mode streamlit' for web interface")
+        print("  - Run 'python enterprise_assistant_demo.py --mode api' for API server")
 
 
 def run_streamlit_dashboard():
-    """Run the Streamlit dashboard in a separate process"""
-    try:
-        print("🌐 Starting Streamlit dashboard...")
-        subprocess.run([
-            sys.executable, "-m", "streamlit", "run", 
-            "streamlit_dashboard.py", 
-            "--server.port", "8501"
-        ])
-    except Exception as e:
-        print(f"Error running Streamlit: {e}")
+    """Start Streamlit dashboard"""
+    print("Starting Streamlit dashboard...")
+    subprocess.run([
+        sys.executable, "-m", "streamlit", "run", 
+        "streamlit_dashboard.py", "--server.port", "8501"
+    ])
+
 
 def run_fastapi_server():
-    """Run the FastAPI server in a separate process"""
-    try:
-        print("🚀 Starting FastAPI server...")
-        subprocess.run([
-            sys.executable, "-m", "uvicorn", 
-            "fastapi_backend:app",
-            "--host", "0.0.0.0",
-            "--port", "8000",
-            "--reload"
-        ])
-    except Exception as e:
-        print(f"Error running FastAPI: {e}")
+    """Start FastAPI server"""
+    print("Starting FastAPI server...")
+    subprocess.run([
+        sys.executable, "-m", "uvicorn", 
+        "fastapi_backend:app", "--host", "0.0.0.0", "--port", "8000", "--reload"
+    ])
+
 
 def main():
-    """Main function to run the comprehensive demo"""
+    """Main function"""
     parser = argparse.ArgumentParser(description="Enterprise Knowledge Assistant Demo")
-    parser.add_argument(
-        "--mode",
-        choices=["interactive", "api", "streamlit", "demo", "all"],
-        default="demo",
-        help="Demo mode to run"
-    )
-    parser.add_argument(
-        "--api-key",
-        help="OpenAI API key (or set OPENAI_API_KEY environment variable)"
-    )
+    parser.add_argument("--mode", choices=["demo", "interactive", "streamlit", "api", "all"], 
+                       default="demo", help="Demo mode")
+    parser.add_argument("--openai-key", help="OpenAI API key")
     
     args = parser.parse_args()
     
-    # Initialize demo
-    demo = EnterpriseAssistantDemo(openai_api_key=args.api_key)
-    
     if args.mode == "demo":
-        # Run full demonstration
-        demo.demo_rag_pipeline()
-        demo.demo_sql_agent()
-        demo.demo_integration_scenarios()
-        demo.demo_api_endpoints()
-        demo.generate_demo_report()
-        
-        print(f"\n🎉 Demo Complete!")
-        print(f"Next steps:")
-        print(f"  - Run 'python enterprise_assistant_demo.py --mode interactive' for hands-on testing")
-        print(f"  - Run 'python enterprise_assistant_demo.py --mode streamlit' for web interface")
-        print(f"  - Run 'python enterprise_assistant_demo.py --mode api' for API server")
-        
+        demo = EnterpriseAssistantDemo(openai_api_key=args.openai_key)
+        demo.run_comprehensive_demo()
+    
     elif args.mode == "interactive":
+        demo = EnterpriseAssistantDemo(openai_api_key=args.openai_key)
         demo.run_interactive_mode()
-        
+    
     elif args.mode == "streamlit":
         run_streamlit_dashboard()
-        
+    
     elif args.mode == "api":
         run_fastapi_server()
-        
+    
     elif args.mode == "all":
-        print("🚀 Starting all services...")
+        print("Starting all services...")
+        # Start Streamlit in background
+        streamlit_process = subprocess.Popen([
+            sys.executable, "-m", "streamlit", "run", 
+            "streamlit_dashboard.py", "--server.port", "8501"
+        ])
         
-        # Start FastAPI in background thread
-        api_thread = threading.Thread(target=run_fastapi_server, daemon=True)
-        api_thread.start()
+        # Start FastAPI in background
+        api_process = subprocess.Popen([
+            sys.executable, "-m", "uvicorn", 
+            "fastapi_backend:app", "--host", "0.0.0.0", "--port", "8000"
+        ])
         
-        # Wait a moment for API to start
-        time.sleep(3)
-        
-        # Start Streamlit in background thread
-        streamlit_thread = threading.Thread(target=run_streamlit_dashboard, daemon=True)
-        streamlit_thread.start()
-        
-        print("✅ All services started!")
-        print("📊 Streamlit Dashboard: http://localhost:8501")
-        print("🔗 FastAPI Documentation: http://localhost:8000/docs")
+        print("All services started!")
+        print("Streamlit Dashboard: http://localhost:8501")
+        print("FastAPI Server: http://localhost:8000")
+        print("Press Ctrl+C to stop all services")
         
         try:
-            # Keep main thread alive
-            while True:
-                time.sleep(1)
+            streamlit_process.wait()
+            api_process.wait()
         except KeyboardInterrupt:
-            print("\n👋 Shutting down services...")
+            print("\nStopping services...")
+            streamlit_process.terminate()
+            api_process.terminate()
+            print("Services stopped")
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ from typing import Dict, List, Any, Optional
 # Configure page
 st.set_page_config(
     page_title="Enterprise Knowledge Assistant",
-    page_icon="🏢",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -162,297 +162,239 @@ class StreamlitDashboard:
     
     def render_header(self):
         """Render the main header"""
-        st.markdown('<div class="main-header">🏢 Enterprise Knowledge Assistant</div>', unsafe_allow_html=True)
+        st.markdown('<div class="main-header">Enterprise Knowledge Assistant</div>', unsafe_allow_html=True)
         
-        # System status indicator
-        col1, col2, col3, col4 = st.columns(4)
+        # System status overview
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             rag_status = st.session_state.system_status.get('rag_status', {})
             rag_ok = rag_status.get('vector_store_loaded', False)
-            st.metric("RAG System", "✅ Ready" if rag_ok else "❌ Error")
+            st.metric("RAG System", "Ready" if rag_ok else "Error")
         
         with col2:
             sql_status = st.session_state.system_status.get('sql_status', {})
             sql_ok = sql_status.get('database_connected', False)
-            st.metric("Database", "✅ Connected" if sql_ok else "❌ Error")
+            st.metric("Database", "Connected" if sql_ok else "Error")
         
         with col3:
             llm_status = rag_status.get('llm_available', False)
-            st.metric("LLM", "✅ Available" if llm_status else "⚠️ Limited")
-        
-        with col4:
-            vector_count = rag_status.get('vector_store_stats', {}).get('total_vectors', 0)
-            st.metric("Documents", f"{vector_count:,}")
+            st.metric("LLM", "Available" if llm_status else "Limited")
     
     def render_sidebar(self):
         """Render the sidebar with configuration options"""
         with st.sidebar:
-            st.header("⚙️ Configuration")
+            st.header("Configuration")
             
-            # API Key configuration
-            st.subheader("OpenAI API Key")
+            # API Key input
             api_key = st.text_input(
-                "Enter your OpenAI API Key:",
-                value=st.session_state.openai_api_key,
-                type="password",
-                help="Required for full LLM capabilities"
+                "OpenAI API Key",
+                value=st.session_state.get('openai_api_key', ''),
+                type='password',
+                help="Enter your OpenAI API key for full functionality"
             )
             
-            if api_key != st.session_state.openai_api_key:
+            if api_key != st.session_state.get('openai_api_key', ''):
                 st.session_state.openai_api_key = api_key
                 st.rerun()
             
-            # System information
-            st.subheader("📊 System Status")
+            # System status
+            st.subheader("System Status")
             
-            if st.session_state.system_status:
-                rag_status = st.session_state.system_status.get('rag_status', {})
-                sql_status = st.session_state.system_status.get('sql_status', {})
-                
-                st.write("**RAG Pipeline:**")
-                st.write(f"- Vector Store: {'✅' if rag_status.get('vector_store_loaded') else '❌'}")
-                st.write(f"- LLM: {'✅' if rag_status.get('llm_available') else '❌'}")
-                st.write(f"- Model: {rag_status.get('llm_model', 'None')}")
-                
-                st.write("**SQL Agent:**")
-                st.write(f"- Database: {'✅' if sql_status.get('database_connected') else '❌'}")
-                st.write(f"- Agent: {'✅' if sql_status.get('sql_agent_available') else '❌'}")
-                st.write(f"- KPIs: {sql_status.get('available_kpis', 0)}")
+            rag_status = st.session_state.system_status.get('rag_status', {})
+            st.write(f"- Vector Store: {'Ready' if rag_status.get('vector_store_loaded') else 'Not Ready'}")
+            st.write(f"- LLM: {'Available' if rag_status.get('llm_available') else 'Not Available'}")
+            
+            sql_status = st.session_state.system_status.get('sql_status', {})
+            st.write(f"- Database: {'Connected' if sql_status.get('database_connected') else 'Not Connected'}")
+            st.write(f"- Agent: {'Available' if sql_status.get('sql_agent_available') else 'Not Available'}")
             
             # Actions
-            st.subheader("🔧 Actions")
+            st.subheader("Actions")
             
-            if st.button("🔄 Refresh System", use_container_width=True):
-                self._load_system_components()
-                st.rerun()
+            col1, col2 = st.columns(2)
             
-            if st.button("🗑️ Clear Chat History", use_container_width=True):
-                st.session_state.chat_history = []
-                st.rerun()
+            with col1:
+                if st.button("Clear Chat History", use_container_width=True):
+                    if hasattr(st.session_state, 'chat_history'):
+                        st.session_state.chat_history = []
+                    st.success("Chat history cleared!")
             
-            # Quick actions
-            st.subheader("⚡ Quick Actions")
-            
-            if st.button("📋 Show Available KPIs", use_container_width=True):
-                if self.sql_agent:
+            with col2:
+                if st.button("Show Available KPIs", use_container_width=True):
                     kpis = self.sql_agent.get_available_kpis()
-                    st.session_state.last_query_result = {
-                        'type': 'kpi_list',
-                        'data': kpis
-                    }
-                    st.rerun()
+                    st.write("Available KPIs:")
+                    for name, desc in kpis.items():
+                        st.write(f"- {name}: {desc}")
             
-            if st.button("📈 System Statistics", use_container_width=True):
-                if self.rag_pipeline:
-                    stats = self.rag_pipeline.knowledge_processor.get_document_statistics()
-                    st.session_state.last_query_result = {
-                        'type': 'system_stats',
-                        'data': stats
-                    }
-                    st.rerun()
+            if st.button("System Statistics", use_container_width=True):
+                self._show_system_stats()
     
     def render_rag_interface(self):
         """Render the RAG document Q&A interface"""
-        st.markdown('<div class="section-header">📚 Document Q&A (RAG)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Document Q&A (RAG)</div>', unsafe_allow_html=True)
         
-        # Query input
-        col1, col2 = st.columns([4, 1])
+        # Question input
+        default_value = st.session_state.selected_example_question
+        user_question = st.text_input(
+            "Ask a question about enterprise documents:",
+            value=default_value,
+            placeholder="e.g., What are the warehouse inventory management procedures?",
+            key="rag_question"
+        )
+        if st.session_state.selected_example_question:
+            st.session_state.selected_example_question = ""
         
+        # Options
+        col1, col2 = st.columns(2)
         with col1:
-            # Use selected example question as value if available
-            default_value = st.session_state.selected_example_question
-            user_question = st.text_input(
-                "Ask a question about enterprise documents:",
-                value=default_value,
-                placeholder="e.g., What are the warehouse inventory management procedures?",
-                key="rag_question"
-            )
-            
-            # Clear the selected example question after it's been used
-            if st.session_state.selected_example_question:
-                st.session_state.selected_example_question = ""
-        
+            use_conversation = st.checkbox("Conversation", value=False)
         with col2:
-            use_conversation = st.checkbox("💬 Conversation", value=False)
+            show_sources = st.checkbox("Show Sources", value=True)
         
         # Example questions
-        st.write("**Example Questions:**")
+        st.write("Example Questions:")
         example_questions = [
             "What are the standard procedures for warehouse inventory management?",
             "How should we handle supplier quality issues?",
             "What are the temperature requirements for cold chain management?",
-            "How do we resolve customer delivery delays?",
-            "What are the key supply chain performance metrics?"
+            "How do we resolve customer delivery delays?"
         ]
         
-        cols = st.columns(len(example_questions))
+        cols = st.columns(2)
         for i, question in enumerate(example_questions):
-            with cols[i]:
-                if st.button(f"📝 {question[:30]}...", key=f"example_rag_{i}", use_container_width=True):
+            with cols[i % 2]:
+                if st.button(question, key=f"example_rag_{i}", use_container_width=True):
                     st.session_state.selected_example_question = question
                     st.rerun()
         
-        # Process query
-        if user_question and st.button("🔍 Ask Question", type="primary", key="ask_rag"):
-            self._process_rag_query(user_question, use_conversation)
+        # Ask question button
+        if user_question and st.button("Ask Question", type="primary", key="ask_rag"):
+            self._process_rag_query(user_question, use_conversation, show_sources)
         
-        # Display chat history
-        if st.session_state.chat_history:
-            st.subheader("💬 Conversation History")
-            for i, entry in enumerate(reversed(st.session_state.chat_history[-5:])):  # Show last 5
-                if entry['type'] == 'rag':
-                    with st.expander(f"Q: {entry['question'][:50]}..."):
-                        st.markdown(f"**Question:** {entry['question']}")
-                        st.markdown(f"**Answer:** {entry['answer']}")
-                        
-                        if entry.get('sources'):
-                            st.markdown("**Sources:**")
-                            for source in entry['sources'][:3]:  # Show top 3 sources
-                                st.markdown(f"- {source['filename']} ({source['document_type']})")
+        # Display conversation history
+        if hasattr(st.session_state, 'chat_history') and st.session_state.chat_history:
+            st.subheader("Conversation History")
+            for i, entry in enumerate(st.session_state.chat_history[-5:]):  # Show last 5
+                with st.expander(f"Q{i+1}: {entry['question'][:50]}..."):
+                    st.write(f"**Question:** {entry['question']}")
+                    st.write(f"**Answer:** {entry['answer']}")
+                    if entry.get('sources'):
+                        st.write(f"**Sources:** {len(entry['sources'])} documents")
     
     def render_sql_interface(self):
         """Render the SQL agent interface for KPI queries"""
-        st.markdown('<div class="section-header">📊 Business Intelligence (SQL)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Business Intelligence (SQL)</div>', unsafe_allow_html=True)
         
-        # Create tabs for different SQL functionalities
-        tab1, tab2, tab3 = st.tabs(["🎯 KPI Dashboard", "💬 Natural Language Queries", "🔧 Custom SQL"])
+        tab1, tab2, tab3 = st.tabs(["KPI Dashboard", "Natural Language Queries", "Custom SQL"])
         
         with tab1:
             self._render_kpi_dashboard()
         
         with tab2:
-            self._render_nl_sql_interface()
+            self._render_natural_language_queries()
         
         with tab3:
-            self._render_custom_sql_interface()
+            self._render_custom_sql()
     
     def _render_kpi_dashboard(self):
-        """Render the KPI dashboard tab"""
-        if not self.sql_agent:
-            st.error("SQL agent not available")
-            return
+        """Render KPI dashboard"""
+        st.write("Select a KPI to execute:")
         
         # Get available KPIs
         kpis = self.sql_agent.get_available_kpis()
         
         # KPI selection
-        col1, col2 = st.columns([3, 1])
+        selected_kpi = st.selectbox(
+            "Choose KPI:",
+            options=list(kpis.keys()),
+            format_func=lambda x: f"{x.replace('_', ' ').title()}: {kpis[x]}"
+        )
         
-        with col1:
-            selected_kpi = st.selectbox(
-                "Select a KPI to display:",
-                options=list(kpis.keys()),
-                format_func=lambda x: f"{x.replace('_', ' ').title()}"
-            )
-        
-        with col2:
-            if st.button("📊 Execute KPI", type="primary", use_container_width=True):
-                self._execute_kpi(selected_kpi)
+        if st.button("Execute KPI", type="primary", use_container_width=True):
+            self._execute_kpi_query(selected_kpi)
         
         # Quick KPI buttons
-        st.write("**Quick Access:**")
-        quick_kpis = ["sales_by_region", "revenue_by_product_category", "top_products", "monthly_sales_trend"]
+        st.write("Quick Actions:")
+        kpi_list = list(kpis.keys())
+        cols = st.columns(3)
         
-        cols = st.columns(len(quick_kpis))
-        for i, kpi in enumerate(quick_kpis):
-            with cols[i]:
-                if st.button(f"📈 {kpi.replace('_', ' ').title()}", key=f"quick_kpi_{i}", use_container_width=True):
-                    self._execute_kpi(kpi)
-        
-        # Display KPI description
-        if selected_kpi:
-            st.info(f"**Description:** {kpis[selected_kpi]}")
-        
-        # Display results if available
-        if st.session_state.last_query_result and st.session_state.last_query_result.get('type') == 'kpi':
-            self._display_kpi_results(st.session_state.last_query_result['data'])
+        for i, kpi in enumerate(kpi_list[:6]):  # Show first 6 KPIs
+            with cols[i % 3]:
+                if st.button(f"{kpi.replace('_', ' ').title()}", key=f"quick_kpi_{i}", use_container_width=True):
+                    self._execute_kpi_query(kpi)
     
-    def _render_nl_sql_interface(self):
+    def _render_natural_language_queries(self):
         """Render natural language SQL interface"""
         st.write("Ask questions about your business data in natural language:")
         
-        # Query input
-        col1, col2 = st.columns([4, 1])
-        
-        with col1:
-            # Use selected SQL example question as value if available
-            default_sql_value = st.session_state.selected_sql_question
-            nl_question = st.text_input(
-                "Business question:",
-                value=default_sql_value,
-                placeholder="e.g., What are the total sales by region?",
-                key="nl_sql_question"
-            )
-            
-            # Clear the selected SQL example question after it's been used
-            if st.session_state.selected_sql_question:
-                st.session_state.selected_sql_question = ""
-        
-        with col2:
-            if st.button("🤖 Ask AI", type="primary", key="ask_nl_sql"):
-                if nl_question:
-                    self._process_nl_sql_query(nl_question)
+        # Question input
+        default_value = st.session_state.selected_sql_question
+        user_question = st.text_input(
+            "Ask a question about your data:",
+            value=default_value,
+            placeholder="e.g., What are the total sales by region?",
+            key="nl_sql_question"
+        )
+        if st.session_state.selected_sql_question:
+            st.session_state.selected_sql_question = ""
         
         # Example questions
-        st.write("**Example Questions:**")
-        example_nl_questions = [
+        st.write("Example Questions:")
+        example_questions = [
             "What are the total sales by region?",
             "Which product categories generate the most revenue?",
-            "Show me the top 10 customers by lifetime value",
-            "What is the monthly sales trend this year?",
-            "Which products have the highest profit margins?"
+            "Show me the top 5 products by sales",
+            "What is the customer lifetime value by segment?"
         ]
         
-        for i, question in enumerate(example_nl_questions):
-            if st.button(f"💡 {question}", key=f"example_nl_{i}", use_container_width=True):
-                st.session_state.selected_sql_question = question
-                st.rerun()
+        cols = st.columns(2)
+        for i, question in enumerate(example_questions):
+            with cols[i % 2]:
+                if st.button(question, key=f"example_nl_{i}", use_container_width=True):
+                    st.session_state.selected_sql_question = question
+                    st.rerun()
+        
+        # Execute button
+        if user_question and st.button("Ask Question", type="primary", key="ask_nl_sql"):
+            self._process_nl_sql_query(user_question)
     
-    def _render_custom_sql_interface(self):
+    def _render_custom_sql(self):
         """Render custom SQL query interface"""
         st.write("Execute custom SQL queries directly:")
         
         # SQL input
-        # Use selected custom SQL as value if available
-        default_custom_sql = st.session_state.selected_custom_sql
+        default_value = st.session_state.selected_custom_sql
         sql_query = st.text_area(
-            "SQL Query:",
-            value=default_custom_sql,
-            placeholder="SELECT * FROM sales LIMIT 10;",
-            height=150,
+            "Enter SQL query:",
+            value=default_value,
+            height=100,
+            placeholder="SELECT * FROM sales LIMIT 10",
             key="custom_sql"
         )
-        
-        # Clear the selected custom SQL after it's been used
         if st.session_state.selected_custom_sql:
             st.session_state.selected_custom_sql = ""
         
-        col1, col2 = st.columns([1, 3])
+        if st.button("Execute", type="primary", use_container_width=True):
+            self._execute_custom_sql(sql_query)
         
-        with col1:
-            if st.button("▶️ Execute", type="primary", use_container_width=True):
-                if sql_query:
-                    self._execute_custom_sql(sql_query)
+        if st.button("Show Schema", use_container_width=True):
+            self._show_database_schema()
         
-        with col2:
-            if st.button("📋 Show Schema", use_container_width=True):
-                self._show_database_schema()
-        
-        # Quick query examples
-        st.write("**Quick Examples:**")
+        # Example queries
+        st.write("Example Queries:")
         example_queries = {
-            "Sales Overview": "SELECT COUNT(*) as total_sales, SUM(SalesAmount) as total_revenue FROM sales;",
-            "Top Products": "SELECT p.ProductName, SUM(s.SalesAmount) as revenue FROM sales s JOIN product p ON s.ProductKey = p.ProductKey GROUP BY p.ProductName ORDER BY revenue DESC LIMIT 5;",
-            "Monthly Trend": "SELECT d.MonthName, SUM(s.SalesAmount) as monthly_sales FROM sales s JOIN date d ON s.DateKey = d.DateKey GROUP BY d.Month, d.MonthName ORDER BY d.Month;"
+            "Top Products": "SELECT ProductName, SUM(SalesAmount) as TotalSales FROM sales s JOIN product p ON s.ProductKey = p.ProductKey GROUP BY ProductName ORDER BY TotalSales DESC LIMIT 10",
+            "Sales by Month": "SELECT DATE_FORMAT(Date, '%Y-%m') as Month, SUM(SalesAmount) as TotalSales FROM sales s JOIN date d ON s.DateKey = d.DateKey GROUP BY Month ORDER BY Month",
+            "Customer Count": "SELECT COUNT(DISTINCT CustomerKey) as TotalCustomers FROM sales"
         }
         
         for name, query in example_queries.items():
-            if st.button(f"📊 {name}", key=f"example_sql_{name}", use_container_width=True):
+            if st.button(name, key=f"example_sql_{name}", use_container_width=True):
                 st.session_state.selected_custom_sql = query
                 st.rerun()
     
-    def _process_rag_query(self, question: str, use_conversation: bool = False):
+    def _process_rag_query(self, question: str, use_conversation: bool = False, show_sources: bool = True):
         """Process a RAG query and display results"""
         if not self.rag_pipeline:
             st.error("RAG pipeline not available")
@@ -479,13 +421,10 @@ class StreamlitDashboard:
                 st.markdown(f"**Answer:** {result['answer']}")
                 
                 # Display sources
-                if result.get('sources'):
+                if result.get('sources') and show_sources:
                     st.markdown("**Sources:**")
                     for i, source in enumerate(result['sources'][:3], 1):
-                        st.markdown(f'<div class="source-doc">', unsafe_allow_html=True)
-                        st.markdown(f"**{i}. {source['filename']}** ({source['document_type']})")
-                        st.markdown(f"{source['content_preview']}")
-                        st.markdown('</div>', unsafe_allow_html=True)
+                        st.markdown(f"- {source['filename']} ({source['document_type']})")
                 
                 st.markdown('</div>', unsafe_allow_html=True)
                 
@@ -613,7 +552,7 @@ class StreamlitDashboard:
             st.metric("KPI", kpi_result['kpi_name'].replace('_', ' ').title())
         
         # Display data table
-        st.subheader("📊 Data")
+        st.subheader("Data")
         st.dataframe(df, use_container_width=True)
         
         # Create visualizations based on KPI type
@@ -635,7 +574,7 @@ class StreamlitDashboard:
             st.plotly_chart(fig, use_container_width=True)
         
         # Show raw query
-        with st.expander("🔍 View SQL Query"):
+        with st.expander("View SQL Query"):
             st.code(kpi_result.get('query', ''), language='sql')
     
     def _show_database_schema(self):
@@ -644,41 +583,42 @@ class StreamlitDashboard:
             st.error("SQL agent not available")
             return
         
-        schema = self.sql_agent.get_database_schema()
-        
-        if 'error' in schema:
-            st.error(f"Error getting schema: {schema['error']}")
-            return
-        
-        st.subheader("📋 Database Schema")
-        
-        # Tables
-        if schema.get('tables'):
-            st.write("**Tables:**")
+        try:
+            schema = self.sql_agent.get_database_schema()
+            
+            if 'error' in schema:
+                st.error(f"Error getting schema: {schema['error']}")
+                return
+            
+            st.subheader("Database Schema")
+            
             for table_name, table_info in schema['tables'].items():
-                with st.expander(f"📁 {table_name} ({table_info['column_count']} columns)"):
-                    for col in table_info['columns']:
-                        st.write(f"- **{col['name']}**: {col['type']} {'(nullable)' if col['nullable'] else '(not null)'}")
+                with st.expander(f"{table_name} ({table_info['column_count']} columns)"):
+                    st.write(f"**Description:** {table_info.get('description', 'No description available')}")
+                    
+                    if table_info.get('columns'):
+                        st.write("**Columns:**")
+                        for col_name, col_info in table_info['columns'].items():
+                            st.write(f"- {col_name}: {col_info['type']} ({col_info.get('description', 'No description')})")
+            
+            # Show views if available
+            if schema.get('views'):
+                st.subheader("Database Views")
+                for view_name, view_info in schema['views'].items():
+                    with st.expander(f"{view_name} ({view_info['column_count']} columns)"):
+                        st.write(f"**Description:** {view_info.get('description', 'No description available')}")
+                        
+                        if view_info.get('columns'):
+                            st.write("**Columns:**")
+                            for col_name, col_info in view_info['columns'].items():
+                                st.write(f"- {col_name}: {col_info['type']}")
         
-        # Views
-        if schema.get('views'):
-            st.write("**Views:**")
-            for view_name, view_info in schema['views'].items():
-                with st.expander(f"👁️ {view_name} ({view_info['column_count']} columns)"):
-                    for col in view_info['columns']:
-                        st.write(f"- {col}")
-        
-        # Summary
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Total Tables", schema.get('table_count', 0))
-        with col2:
-            st.metric("Total Views", len(schema.get('views', {})))
+        except Exception as e:
+            st.error(f"Error displaying schema: {e}")
     
     def render_main_interface(self):
-        """Render the main interface"""
-        # Create main tabs
-        tab1, tab2, tab3 = st.tabs(["🏠 Dashboard", "📚 Document Q&A", "📊 Business Intelligence"])
+        """Render the main interface with tabs"""
+        tab1, tab2, tab3 = st.tabs(["Dashboard", "Document Q&A", "Business Intelligence"])
         
         with tab1:
             self._render_dashboard_overview()
@@ -690,85 +630,28 @@ class StreamlitDashboard:
             self.render_sql_interface()
     
     def _render_dashboard_overview(self):
-        """Render the dashboard overview tab"""
-        st.markdown('<div class="section-header">🏠 Dashboard Overview</div>', unsafe_allow_html=True)
+        """Render the main dashboard overview"""
+        st.markdown('<div class="main-header">Enterprise Knowledge Assistant Dashboard</div>', unsafe_allow_html=True)
         
-        # Welcome message
-        st.markdown("""
-        Welcome to the **Enterprise Knowledge Assistant**! This powerful system combines:
+        # Overview
+        st.write("Welcome to the Enterprise Knowledge Assistant! This system provides:")
+        st.write("- Document Q&A: Ask questions about your enterprise documents using AI")
+        st.write("- Business Intelligence: Query your data and get insights with natural language")
+        st.write("- Semantic Search: Find relevant information across all your knowledge base")
+        st.write("- KPI Dashboard: Monitor key performance indicators and metrics")
+    
+    def _show_system_stats(self):
+        """Show system statistics"""
+        if not self.rag_pipeline:
+            st.error("RAG pipeline not available")
+            return
         
-        - 📚 **Document Q&A**: Ask questions about your enterprise documents using AI
-        - 📊 **Business Intelligence**: Query your data and get insights with natural language
-        - 🔍 **Semantic Search**: Find relevant information across all your knowledge base
-        - 📈 **KPI Dashboard**: Monitor key performance indicators and metrics
-        """)
-        
-        # Quick stats
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            if self.rag_pipeline:
-                stats = st.session_state.system_status.get('rag_status', {})
-                vector_stats = stats.get('vector_store_stats', {})
-                st.metric("📄 Documents", vector_stats.get('total_vectors', 0))
-            else:
-                st.metric("📄 Documents", "N/A")
-        
-        with col2:
-            if self.sql_agent:
-                kpis = self.sql_agent.get_available_kpis()
-                st.metric("📊 Available KPIs", len(kpis))
-            else:
-                st.metric("📊 Available KPIs", "N/A")
-        
-        with col3:
-            chat_count = len(st.session_state.chat_history)
-            st.metric("💬 Chat History", chat_count)
-        
-        with col4:
-            last_updated = st.session_state.system_status.get('last_updated', '')
-            if last_updated:
-                update_time = datetime.fromisoformat(last_updated).strftime("%H:%M")
-                st.metric("🕒 Last Updated", update_time)
-            else:
-                st.metric("🕒 Last Updated", "N/A")
-        
-        # Recent activity
-        if st.session_state.chat_history:
-            st.subheader("📈 Recent Activity")
-            
-            recent_queries = st.session_state.chat_history[-3:]  # Last 3 queries
-            
-            for entry in reversed(recent_queries):
-                with st.expander(f"🔍 {entry['question'][:60]}... ({entry['type'].upper()})"):
-                    st.write(f"**Question:** {entry['question']}")
-                    st.write(f"**Answer:** {entry['answer'][:200]}...")
-                    st.write(f"**Time:** {entry.get('timestamp', 'Unknown')}")
-        
-        # Quick actions
-        st.subheader("⚡ Quick Actions")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            if st.button("📋 Inventory SOPs", use_container_width=True):
-                st.session_state.selected_example_question = "What are the warehouse inventory management procedures?"
-                st.success("✅ Question set! Go to 'Document Q&A' tab to see the result.")
-        
-        with col2:
-            if st.button("📊 Sales by Region", use_container_width=True):
-                if self.sql_agent:
-                    self._execute_kpi("sales_by_region")
-        
-        with col3:
-            if st.button("🏆 Top Products", use_container_width=True):
-                if self.sql_agent:
-                    self._execute_kpi("top_products")
-        
-        with col4:
-            if st.button("📈 Monthly Trends", use_container_width=True):
-                if self.sql_agent:
-                    self._execute_kpi("monthly_sales_trend")
+        try:
+            stats = self.rag_pipeline.knowledge_processor.get_document_statistics()
+            st.write("System Statistics:")
+            st.json(stats)
+        except Exception as e:
+            st.error(f"Error getting system stats: {e}")
     
     def run(self):
         """Run the Streamlit dashboard"""
@@ -784,8 +667,8 @@ class StreamlitDashboard:
         # Footer
         st.markdown("---")
         st.markdown(
-            "🏢 **Enterprise Knowledge Assistant** | "
-            "Powered by LangChain, OpenAI GPT-4, FAISS, and Streamlit"
+            "Enterprise Knowledge Assistant | "
+            "Powered by LangChain • OpenAI • FAISS • Streamlit"
         )
 
 

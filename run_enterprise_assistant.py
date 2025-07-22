@@ -27,7 +27,7 @@ def print_banner():
     banner = """
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║          🏢 Enterprise Knowledge Assistant with RAG                          ║
+║          Enterprise Knowledge Assistant with RAG                             ║
 ║                                                                              ║
 ║     Powered by LangChain • OpenAI GPT-4 • FAISS • Streamlit • FastAPI      ║
 ║                                                                              ║
@@ -58,8 +58,8 @@ def check_dependencies():
             missing_packages.append(package_name)
     
     if missing_packages:
-        print(f"❌ Missing required packages: {', '.join(missing_packages)}")
-        print(f"💡 Install with: pip install {' '.join(missing_packages)}")
+        print(f"Missing required packages: {', '.join(missing_packages)}")
+        print(f"Install with: pip install {' '.join(missing_packages)}")
         return False
     
     return True
@@ -68,13 +68,13 @@ def check_api_key():
     """Check if OpenAI API key is configured"""
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
-        print("⚠️  OpenAI API key not found!")
+        print("OpenAI API key not found!")
         print("   Set OPENAI_API_KEY environment variable for full functionality")
         print("   Example: export OPENAI_API_KEY='your-api-key-here'")
         print("   Note: System will work with limited functionality without API key")
         return False
     else:
-        print("✅ OpenAI API key configured")
+        print("OpenAI API key configured")
         return True
 
 def run_component(component: str):
@@ -85,8 +85,8 @@ def run_component(component: str):
         subprocess.run([sys.executable, "enterprise_assistant_demo.py", "--mode", "demo"])
     
     elif component == "streamlit":
-        print("🌐 Starting Streamlit dashboard...")
-        print("📊 Dashboard will be available at: http://localhost:8501")
+        print("Starting Streamlit dashboard...")
+        print("Dashboard will be available at: http://localhost:8501")
         subprocess.run([
             sys.executable, "-m", "streamlit", "run", 
             "streamlit_dashboard.py", 
@@ -95,9 +95,9 @@ def run_component(component: str):
         ])
     
     elif component == "api":
-        print("🚀 Starting FastAPI backend...")
-        print("📖 API documentation: http://localhost:8000/docs")
-        print("📚 ReDoc documentation: http://localhost:8000/redoc")
+        print("Starting FastAPI backend...")
+        print("API documentation: http://localhost:8000/docs")
+        print("ReDoc documentation: http://localhost:8000/redoc")
         subprocess.run([
             sys.executable, "-m", "uvicorn", 
             "fastapi_backend:app",
@@ -107,19 +107,19 @@ def run_component(component: str):
         ])
     
     elif component == "interactive":
-        print("💬 Starting interactive mode...")
+        print("Starting interactive mode...")
         subprocess.run([sys.executable, "enterprise_assistant_demo.py", "--mode", "interactive"])
     
     elif component == "all":
-        print("🚀 Starting all services...")
+        print("Starting all services...")
         subprocess.run([sys.executable, "enterprise_assistant_demo.py", "--mode", "all"])
     
     elif component == "lightweight":
-        print("🪶 Starting lightweight demo (reduced memory usage)...")
+        print("Starting lightweight demo (reduced memory usage)...")
         subprocess.run([sys.executable, "lightweight_config.py"])
     
     else:
-        print(f"❌ Unknown component: {component}")
+        print(f"Unknown component: {component}")
         print_help()
 
 def print_help():
@@ -127,11 +127,11 @@ def print_help():
     help_text = """
 Available Components:
 
-📊 demo        - Run comprehensive demo showcasing all features
-🌐 streamlit   - Start Streamlit web dashboard (port 8501)
-🚀 api         - Start FastAPI backend server (port 8000)  
-💬 interactive - Interactive command-line interface
-🔄 all         - Start all services (Streamlit + FastAPI)
+demo        - Run comprehensive demo showcasing all features
+streamlit   - Start Streamlit web dashboard (port 8501)
+api         - Start FastAPI backend server (port 8000)  
+interactive - Interactive command-line interface
+all         - Start all services (Streamlit + FastAPI)
 
 Examples:
     python run_enterprise_assistant.py demo
@@ -179,23 +179,23 @@ def main():
     
     # Check dependencies if requested
     if args.check_deps:
-        print("🔍 Checking dependencies...")
+        print("Checking dependencies...")
         deps_ok = check_dependencies()
         api_key_ok = check_api_key()
         
         if deps_ok and api_key_ok:
-            print("✅ All dependencies satisfied!")
+            print("All dependencies satisfied!")
         elif deps_ok:
-            print("⚠️  Dependencies OK, but API key missing (limited functionality)")
+            print("Dependencies OK, but API key missing (limited functionality)")
         else:
-            print("❌ Please install missing dependencies")
+            print("Please install missing dependencies")
         
         return
     
     # Check dependencies
-    print("🔍 Checking system requirements...")
+    print("Checking system requirements...")
     if not check_dependencies():
-        print("\n💡 Install requirements with: pip install -r requirements.txt")
+        print("\nInstall requirements with: pip install -r requirements.txt")
         return
     
     # Check API key
@@ -206,7 +206,7 @@ def main():
     if args.component:
         run_component(args.component)
     else:
-        print("🤔 No component specified. Here's what you can run:")
+        print("No component specified. Here's what you can run:")
         print_help()
 
 if __name__ == "__main__":
